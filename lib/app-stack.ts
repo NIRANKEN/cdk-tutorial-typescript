@@ -1,21 +1,31 @@
-import { Stack, StackProps, App } from 'aws-cdk-lib';
-import { Function, Runtime, Code } from 'aws-cdk-lib/aws-lambda';
-import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
+import { Stack, App, StackProps } from "aws-cdk-lib";
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as apigw from "aws-cdk-lib/aws-apigateway";
+import { HitCounter } from "./hitcounter";
+import { TableViewer } from "cdk-dynamo-table-viewer";
 
 export class AppStack extends Stack {
   constructor(scope: App, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    // defines an AWS Lambda resource
-    const hello = new Function(this, 'HelloHandler', {
-      runtime: Runtime.NODEJS_14_X, // 実行環境
-      code: Code.fromAsset('lambda'), // "lambda" directoryからコードを読み込むよ。
-      handler: 'hello.handler' // helloっていうファイルの、functionが"handler"だよ
+    const hello = new lambda.Function(this, "HelloHandler", {
+      runtime: lambda.Runtime.NODEJS_14_X,
+      code: lambda.Code.fromAsset("lambda"),
+      handler: "hello.handler",
     });
 
-    // defines an API Gateway REST API resouce backed by our "hello" function
-    new LambdaRestApi(this, 'Endpoint', {
-      handler: hello
+    const helloWithCounter = new HitCounter(this, "HelloHitCounter", {
+      downstream: hello,
+    });
+
+    // defines an API Gateway REST API resource backed by our "hello" function.
+    new apigw.LambdaRestApi(this, "Endpoint", {
+      handler: helloWithCounter.handler,
+    });
+
+    new TableViewer(this, 'ViewHitCounter', {
+      title: 'Hello Hits',
+      table: helloWithCounter.table
     });
   }
 }
