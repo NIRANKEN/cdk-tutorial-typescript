@@ -8,6 +8,7 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
+    "cdk": "cdk",
     "diff": "docker run --rm -it -v $(pwd):/app -v ~/.aws/:/root/.aws -w /app robertd/alpine-aws-cdk /bin/sh -c 'cdk diff'",
     "bootstrap": "docker run --rm -it -v $(pwd):/app -v ~/.aws/:/root/.aws -w /app robertd/alpine-aws-cdk /bin/sh -c 'cdk bootstrap'",
     "deploy": "docker run --rm -it -v $(pwd):/app -v ~/.aws/:/root/.aws -w /app robertd/alpine-aws-cdk /bin/sh -c 'cdk deploy'"
