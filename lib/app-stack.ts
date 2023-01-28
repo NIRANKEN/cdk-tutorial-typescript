@@ -6,7 +6,7 @@ import { TableViewer } from "cdk-dynamo-table-viewer";
 import { Construct } from "constructs";
 
 export class AppStack extends Stack {
-  public readonly hcViewUrl: CfnOutput;
+  public readonly hcViewerUrl: CfnOutput;
   public readonly hcEndpoint: CfnOutput;
 
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -36,7 +36,7 @@ export class AppStack extends Stack {
       value: gateway.url,
     });
 
-    this.hcViewUrl = new CfnOutput(this, "TableViewerUrl", {
+    this.hcViewerUrl = new CfnOutput(this, "TableViewerUrl", {
       value: tv.endpoint,
     });
   }
