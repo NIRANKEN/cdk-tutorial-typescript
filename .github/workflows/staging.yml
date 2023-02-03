@@ -1,0 +1,42 @@
+name: Build & Deploy React App on S3
+on:
+  push:
+      branches:
+        - main
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_OIDC_ROLE_ARN: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+  AWS_REGION: us-east-1
+  STAGING_DOMAIN: $${{ secrets.STAGING_DOMAIN }}
+  STAGING_SUBDOMAIN: $${{ secrets.STAGING_SUBDOMAIN }}
+  STAGING_AWS_ACCOUNT_ID: $${{ secrets.AWS_ACCOUNT_ID }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: PreBuild
+        run: |
+          curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -; sudo apt-get update
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Assume Role
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ env.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{env.AWS_REGION}}
+
+      - name: Install CDK Dependency
+        run: npm install
+
+      - name: Build Web
+        run: yarn --cwd ./app && yarn --cwd ./app build
+
+      - name: Deploy
+        run: npm run cdk deploy -c domain=${{ env.STAGING_DOMAIN }} -c subdomain=${{ env.STAGING_SUBDOMAIN }} -c accountId=${{ env.STAGING_AWS_ACCOUNT_ID }}
